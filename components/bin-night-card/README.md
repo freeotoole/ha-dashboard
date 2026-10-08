@@ -27,6 +27,8 @@ Requires the following Home Assistant integration and helpers
   duplicate root key.
 - `bin-night-card.yaml`: example grid of three bins; paste into a view's `cards` list and replace the
   entities, titles and colours.
+- `bin-night-card.automation.yaml`: automation that resets the helpers after collection; import it via
+  Settings > Automations > Create > Edit in YAML, and adjust the entity IDs.
 
 ## Behaviour
 
@@ -34,7 +36,9 @@ Requires the following Home Assistant integration and helpers
   `In N nights`, or `Collection today`.
 - Tap toggles `completion_entity` (`on` = taken out). Hold opens its more-info dialog.
 - Completion is stored in the helper, so it persists across refreshes and devices.
-- 📋 **Helpers are currently not reset automatically** - An automation to turn them off after collection is coming.
+- The automation turns a helper off when its collection sensor moves past today's date. Waste
+  Collection Schedule does this at the source's `day_switch_time` (default `10:00`), so helpers reset
+  at about 10:00 on collection day. Unknown or unavailable sensor states never trigger a reset.
 
 ## Variables
 
