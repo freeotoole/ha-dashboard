@@ -8,6 +8,6 @@ Anything in `/components` is in a state I'm not too embarrassed about. `/lab` is
 
 `dynamic-person-card` switches avatar and colours based on person's zones.
 
-![Alt Text](./docs/screenshots/dynamic-person-card.png)
+<img alt="my dynamic person cards in home assistant" src="./docs/screenshots/dynamic-person-card.png" width="460px">
 
 [Full documentation](./components/dynamic-person-card/README.md)

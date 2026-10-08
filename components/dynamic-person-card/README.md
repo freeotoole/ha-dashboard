@@ -1,6 +1,6 @@
 # Dynamic Person Card
 
-![Example of Dynamic Person Card](../../docs/screenshots/dynamic-person-card.png)
+<img alt="my dynamic person cards in home assistant" src="../../docs/screenshots/dynamic-person-card.png" width="460px">
 
 ## Dependencies
 
