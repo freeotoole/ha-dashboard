@@ -1,0 +1,72 @@
+# Current Time and Temp
+type: custom:button-card
+show_name: false
+show_icon: false
+show_state: false
+tap_action:
+  action: none
+entity: sensor.time
+variables:
+  display_name: Free
+  # Replace with an image URL served by Home Assistant, such as /local/welcome.jpg.
+  background_image: /local/images/welcome.jpg
+triggers_update:
+  - sensor.time
+  - sensor.gw2000c_outdoor_temperature
+  - sensor.gw2000c_humidity
+styles:
+  card:
+    - background: |
+        [[[
+          const image = variables.background_image;
+          const overlay = 'linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55))';
+          return image ? `${overlay}, url("${image}") center / cover no-repeat` : overlay;
+        ]]]
+    - border: 0
+    - border-radius: 0
+    - padding: 0 16px
+    - color: white
+    - box-shadow: none
+  grid:
+    - grid-template-areas: '"content"'
+  custom_fields:
+    content:
+      - text-align: left
+      - justify-self: stretch
+      - width: 100%
+custom_fields:
+  content: |
+    [[[
+      const now = new Date();
+      const hour = now.getHours();
+      const time = now.toLocaleTimeString('en-AU', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).replace(/\s*(am|pm)\b/i, (_, meridiem) => ` <span style="font-size:var(--ha-font-size-xl)">${meridiem.toUpperCase()}</span>`);
+      const day = now.getDate();
+      const suffix = day % 100 >= 11 && day % 100 <= 13 ? 'th' :
+        day % 10 === 1 ? 'st' : day % 10 === 2 ? 'nd' : day % 10 === 3 ? 'rd' : 'th';
+      const date = `${now.toLocaleDateString('en-AU', { weekday: 'short' })} ${day}${suffix} ${now.toLocaleDateString('en-AU', { month: 'long' })}`;
+      const name = String(variables.display_name || '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+      const temp = states['sensor.gw2000c_outdoor_temperature']?.state;
+      const humidity = states['sensor.gw2000c_humidity']?.state;
+      const temperature = temp && Number.isFinite(Number(temp)) ? Number(temp).toFixed(1) : '—';
+      return `
+        <div style="display:grid;grid-template-columns:1fr auto;align-items:end;column-gap:16px;line-height:1">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:var(--ha-font-size-3xl);font-weight:700;white-space:nowrap">${time}</div>
+            <div style="opacity:.8;white-space:nowrap; font-weight:500">${date}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:var(--ha-font-size-3xl);font-weight:700;white-space:nowrap">${temperature} <span style="font-size:var(--ha-font-size-xl)">°C</span></div>
+            <div style="opacity:.8;white-space:nowrap; font-weight:500">${humidity ?? '—'}% humidity</div>
+          </div>
+        </div>
+      `;
+    ]]]
+grid_options:
+  columns: 9
+  rows: 1

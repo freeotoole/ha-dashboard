@@ -1,0 +1,31 @@
+type: custom:decluttering-card
+template: dynamic-person-card
+variables:
+  - person_entity: person.bunny
+  - display_name: Lillie
+  - home_avatar: /local/avatars/bunny_home.png
+  - work_avatar: /local/avatars/bunny_work.png
+  - away_avatar: /local/avatars/bunny_away.png
+  - work_zone: Bunny Factory
+  - state_colors: "{'home': '#4987AE', 'Bunny Factory': '#E8378B'}"
+  - away_color: "#8C8780"
+  - top_buttons:
+      - entity: person.bunny
+        icon: mdi:factory
+        fill_width: false
+        state_content: state
+  - bottom_buttons:
+      - icon: mdi:map-marker
+        name: Map
+        show_name: true
+        fill_width: false
+        tap_action:
+          action: navigate
+          navigation_path: /map
+      - entity: sensor.bun_bun_battery_level
+        fill_width: false
+        scrolling_effect: false
+        state_content: state
+        state_background: false
+grid_options:
+  columns: 6

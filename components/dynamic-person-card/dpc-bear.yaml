@@ -1,0 +1,31 @@
+type: custom:decluttering-card
+template: dynamic-person-card
+variables:
+  - person_entity: person.admin
+  - display_name: Free
+  - home_avatar: /local/avatars/bear_home.png
+  - work_avatar: /local/avatars/bear_bowls.png
+  - away_avatar: /local/avatars/bear_away.png
+  - work_zone: The Club
+  - state_colors: "{'home': '#4987AE', 'The Club': '#228B22'}"
+  - away_color: "#4D4A44"
+  - top_buttons:
+      - entity: person.admin
+        icon: mdi:home
+        fill_width: false
+        state_content: state
+  - bottom_buttons:
+      - icon: mdi:map-marker
+        name: Map
+        show_name: true
+        fill_width: false
+        tap_action:
+          action: navigate
+          navigation_path: /map
+      - entity: sensor.frees_iphone_battery_level
+        fill_width: false
+        scrolling_effect: false
+        state_content: state
+        state_background: false
+grid_options:
+  columns: 6

@@ -1,0 +1,35 @@
+type: custom:decluttering-card
+template: dynamic-person-card
+variables:
+  - person_entity: person.bunny
+  - display_name: Bunny
+  - home_avatar: /local/avatars/bunny_home.png
+  - work_avatar: /local/avatars/bunny_work.png
+  - away_avatar: /local/avatars/bunny_away.png
+  - work_zone: Bunny Factory
+  - state_colors: >-
+      {'home': '#4987AE', 'Bunny Factory': '#F35796'}
+  - away_color: "#8C8780"
+  - top_buttons:
+      - entity: person.bunny
+        icon: mdi:factory
+        fill_width: false
+        state_content: state
+      - entity: sensor.bun_bun_battery_level
+        fill_width: false
+        scrolling_effect: false
+        state_content: state
+        state_background: false
+  - bottom_buttons:
+      - entity: sensor.frees_iphone_bssid
+        icon: mdi:wifi
+        fill_width: false
+      - entity: device_tracker.bunny
+        fill_width: false
+        scrolling_effect: false
+        state_background: false
+        icon: mdi:alarm
+        name: 5am
+        show_name: true
+grid_options:
+  columns: 6
