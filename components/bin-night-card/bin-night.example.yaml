@@ -7,6 +7,7 @@ cards:
     variables:
       - collection_entity: sensor.waste_collection_schedule_red_bin
       - title: General Waste
+      - show_title: true
       - color: "#C0393B"
       - completion_entity: input_boolean.red_bin_out
   - type: custom:decluttering-card
@@ -14,6 +15,7 @@ cards:
     variables:
       - collection_entity: sensor.waste_collection_schedule_recycling
       - title: Recycling
+      - show_title: true
       - color: "#FFE500"
       - text_color: "#111111"
       - completion_entity: input_boolean.recycling_bin_out
@@ -22,5 +24,6 @@ cards:
     variables:
       - collection_entity: sensor.waste_collection_schedule_green_bin
       - title: Green Waste
+      - show_title: true
       - color: "#019726"
       - completion_entity: input_boolean.green_bin_out

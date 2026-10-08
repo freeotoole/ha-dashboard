@@ -1,18 +1,18 @@
-# Merge this mapping into the dashboard root (alongside views).
+# Merge this into the dashboard 'raw configuration editor' above views.
 
 decluttering_templates:
-  # Copy from below ---
+  # Copy from below into raw config editor---
 
   bin-night:
     default:
       - title: Bin
       - icon: ""
       - color: "#777777"
-      - text_color: "#FFFFFF"
+      - text_color: "var(--primary-text-color)"
       - show_title: false
       - completion_style: background
-      - completed_color: "#777777"
-      - completed_icon_color: "#FFFFFF"
+      - completed_color: "var(--ha-card-background,var(--card-background-color,white))"
+      - completed_icon_color: ""
       - completed_label: Taken out
 
     card:
@@ -98,7 +98,6 @@ decluttering_templates:
 
       styles:
         card:
-          - border-radius: 0
           - border: none
           - padding: 16px
           - background-color: |
@@ -109,7 +108,15 @@ decluttering_templates:
                   ? '[[completed_color]]'
                   : '[[color]]';
               ]]]
-          - color: "[[text_color]]"
+          - color: |
+              [[[
+                const isCompleted = states['[[completion_entity]]']?.state === 'on';
+                const style = '[[completion_style]]';
+                // Only swap when the background changes, otherwise text would match the background.
+                return isCompleted && ['background', 'both'].includes(style)
+                  ? '[[color]]'
+                  : '[[text_color]]';
+              ]]]
 
         grid:
           - grid-template-areas: '"i" "n" "l"'
@@ -120,10 +127,10 @@ decluttering_templates:
           - width: 36px
           - color: |
               [[[
-                const isCompleted = entity?.state === 'on';
-                const style = '[[completion_style]]';
-                return isCompleted && ['icon', 'both'].includes(style)
-                  ? '[[completed_icon_color]]'
+                const isCompleted = states['[[completion_entity]]']?.state === 'on';
+                // Completed icon uses completed_icon_color, falling back to the card's `color`.
+                return isCompleted
+                  ? ('[[completed_icon_color]]' || '[[color]]')
                   : '[[text_color]]';
               ]]]
 

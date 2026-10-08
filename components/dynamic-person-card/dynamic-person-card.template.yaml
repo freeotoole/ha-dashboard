@@ -1,5 +1,8 @@
-# Merge this mapping into the dashboard root (alongside views).
+# Merge this into the dashboard 'raw configuration editor' above views.
+
 decluttering_templates:
+  # Copy from below into raw config editor---
+
   dynamic-person-card:
     default:
       - show_name: false
