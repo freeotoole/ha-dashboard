@@ -14,7 +14,7 @@ Anything in `/components` is in a state I'm not too embarrassed about. `/lab` is
 
 ### Bin Night Card
 
-`bin-night-card` cards showing how many nights until each bin needs to go out. Tapping a
+`bin-night-card` cards shows how many nights until each bin needs to go out for collection. Tapping a
 tile marks the bin as taken out.
 
 <img alt="my dynamic person cards in home assistant" src="./docs/screenshots/bin-night-card.png" width="460px">
