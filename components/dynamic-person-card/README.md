@@ -1,5 +1,7 @@
 # Dynamic Person Card
 
+![Example of Dynamic Person Card](../../docs/screenshots/dynamic-person-card.png)
+
 ## Dependencies
 
 Requires the following HACs addons
