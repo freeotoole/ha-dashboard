@@ -3,6 +3,8 @@
 A three-tile (or any number) card showing how many nights until each bin needs to go out. Tapping a
 tile toggles an `input_boolean` to mark the bin as taken out.
 
+<img alt="my bin. night cards in home assistant" src="../../docs/screenshots/bin-night-card.png" width="460px">
+
 ## Dependencies
 
 Requires the following HACS add-ons
@@ -20,10 +22,10 @@ Requires the following Home Assistant integration and helpers
 
 ## Files
 
-- `bin-night.template.yaml`: merge `decluttering_templates` into the dashboard's raw configuration
+- `bin-night-card.template.yaml`: merge `decluttering_templates` into the dashboard's raw configuration
   at the root, alongside `views`. Merge into an existing template mapping rather than adding a
   duplicate root key.
-- `bin-night.yaml`: example grid of three bins; paste into a view's `cards` list and replace the
+- `bin-night-card.yaml`: example grid of three bins; paste into a view's `cards` list and replace the
   entities, titles and colours.
 
 ## Behaviour

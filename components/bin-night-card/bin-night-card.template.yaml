@@ -3,7 +3,7 @@
 decluttering_templates:
   # Copy from below into raw config editor---
 
-  bin-night:
+  bin-night-card:
     default:
       - title: Bin
       - icon: ""
