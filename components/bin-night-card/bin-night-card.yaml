@@ -1,0 +1,26 @@
+type: grid
+columns: 3
+square: false
+cards:
+  - type: custom:decluttering-card
+    template: bin-night-card
+    variables:
+      - collection_entity: sensor.waste_collection_schedule_red_bin
+      - title: General Waste
+      - color: "#C0393B"
+      - completion_entity: input_boolean.red_bin_out
+  - type: custom:decluttering-card
+    template: bin-night-card
+    variables:
+      - collection_entity: sensor.waste_collection_schedule_recycling
+      - title: Recycling
+      - color: "#FFE500"
+      - text_color: "#111111"
+      - completion_entity: input_boolean.recycling_bin_out
+  - type: custom:decluttering-card
+    template: bin-night-card
+    variables:
+      - collection_entity: sensor.waste_collection_schedule_green_bin
+      - title: Green Waste
+      - color: "#019726"
+      - completion_entity: input_boolean.green_bin_out
