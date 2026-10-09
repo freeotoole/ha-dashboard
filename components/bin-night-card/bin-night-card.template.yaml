@@ -1,148 +1,167 @@
-# Merge this into the dashboard 'raw configuration editor' above views.
+bin-night-card:
+  default:
+    - title: Bin
+    - icon: mdi:trash-can
+    - color: "var(--ha-card-background,var(--card-background-color,white))"
+    - text_color: "var(--primary-text-color)"
+    - show_title: false
+    - completion_entity: ""
+    - completion_style: background
+    - completed_color: "#777777"
+    - completed_icon_color: "var(--secondary-text-color)"
+    - completed_label: Taken out
 
-decluttering_templates:
-  # Copy from below into raw config editor---
+  card:
+    type: custom:button-card
 
-  bin-night-card:
-    default:
-      - title: Bin
-      - icon: ""
-      - color: "#777777"
-      - text_color: "var(--primary-text-color)"
-      - show_title: false
-      - completion_style: background
-      - completed_color: "var(--ha-card-background,var(--card-background-color,white))"
-      - completed_icon_color: ""
-      - completed_label: Taken out
+    entity: |
+      [[[
+        return '[[completion_entity]]' || 'sensor.bin_night_schedule';
+      ]]]
 
-    card:
-      type: custom:button-card
-      entity: "[[completion_entity]]"
-
-      show_icon: true
-      show_name: true
-      show_label: true
-
-      icon: |
+    variables:
+      # The next collection for this bin type
+      event: |
         [[[
-          const custom = '[[icon]]';
-          if (custom) return custom;
-          return states['[[collection_entity]]']?.attributes?.icon
-            || 'mdi:trash-can';
-        ]]]
-      name: "[[title]]"
-      label: |
-        [[[
-          // Completion state: the helper is the single source of truth.
-          const isCompleted = entity?.state === 'on';
-          if (isCompleted) return '[[completed_label]]';
+          const schedule =
+            states['sensor.bin_night_schedule']?.attributes?.next_by_type || {};
 
-          // Collection date calculation.
-          const collection = states['[[collection_entity]]']?.state;
-
-          if (!collection || ['unknown', 'unavailable'].includes(collection)) {
-            return 'Unknown';
-          }
-
-          // Parse collection date in local time.
-          // Supports "on Tue, 13.10.2026" (DD.MM.YYYY) and ISO "2026-10-13".
-          let year, month, day;
-          const dmy = collection.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
-          const iso = collection.match(/(\d{4})-(\d{2})-(\d{2})/);
-          if (dmy) {
-            [day, month, year] = dmy.slice(1).map(Number);
-          } else if (iso) {
-            [year, month, day] = iso.slice(1).map(Number);
-          } else {
-            return 'Unknown';
-          }
-          const binNight = new Date(year, month - 1, day);
-
-          // Bins go out the night before collection.
-          binNight.setDate(binNight.getDate() - 1);
-
-          const today = new Date();
-
-          // Compare calendar dates, avoiding daylight-saving errors.
-          const days = Math.round(
-            (
-              Date.UTC(
-                binNight.getFullYear(),
-                binNight.getMonth(),
-                binNight.getDate()
-              ) -
-              Date.UTC(
-                today.getFullYear(),
-                today.getMonth(),
-                today.getDate()
-              )
-            ) / 86400000
-          );
-
-          if (days === 0) return 'Tonight';
-          if (days === 1) return 'Tomorrow';
-          if (days < 0) return 'Collection today';
-
-          return `In ${days} nights`;
+          return schedule['[[title]]'] || null;
         ]]]
 
-      triggers_update:
-        - "[[completion_entity]]"
-        - "[[collection_entity]]"
+      # Collection has started, but its return deadline hasn't passed
+      bringing_in: |
+        [[[
+          const event = variables.event;
+          if (!event) return false;
 
-      tap_action:
-        action: toggle
+          const now = Date.now();
 
-      hold_action:
-        action: more-info
+          return now >= new Date(event.start).getTime() &&
+                now < new Date(event.end).getTime();
+        ]]]
 
-      styles:
-        card:
-          - border: none
-          - padding: 16px
-          - background-color: |
-              [[[
-                const isCompleted = entity?.state === 'on';
-                const style = '[[completion_style]]';
-                return isCompleted && ['background', 'both'].includes(style)
+      # Bin has been marked as taken out
+      completed: |
+        [[[
+          if (variables.bringing_in) return false;
+
+          const id = '[[completion_entity]]';
+
+          return !!id && states[id]?.state === 'on';
+        ]]]
+
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+
+    icon: "[[icon]]"
+    name: "[[title]]"
+
+    label: |
+      [[[
+        const event = variables.event;
+
+        if (!event) return 'No collection';
+        if (variables.bringing_in) return 'Bring in';
+        if (variables.completed) return '[[completed_label]]';
+
+        const start = new Date(event.start);
+        const now = new Date();
+
+        // Bin night is the day before collection
+        const binNight = new Date(start);
+        binNight.setDate(binNight.getDate() - 1);
+
+        // Compare calendar dates without daylight-saving errors
+        const days = Math.round((
+          Date.UTC(
+            binNight.getFullYear(),
+            binNight.getMonth(),
+            binNight.getDate()
+          ) -
+          Date.UTC(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+          )
+        ) / 86400000);
+
+        if (days === 0) return 'Tonight';
+        if (days === 1) return 'Tomorrow';
+        if (days < 0) return 'Collection today';
+
+        if (days > 14) {
+          return [
+            String(binNight.getDate()).padStart(2, '0'),
+            String(binNight.getMonth() + 1).padStart(2, '0')
+          ].join('/');
+        }
+
+        return `In ${days} days`;
+      ]]]
+
+    tap_action: |
+      [[[
+        const id = '[[completion_entity]]';
+
+        if (!id || !states[id] ||
+            !variables.event || variables.bringing_in) {
+          return { action: 'none' };
+        }
+
+        return {
+          action: 'toggle',
+          entity: id
+        };
+      ]]]
+
+    hold_action:
+      action: more-info
+      entity: sensor.bin_night_schedule
+
+    styles:
+      card:
+        - border: none
+        - padding: 12px
+        - background-color: |
+            [[[
+              const style = '[[completion_style]]';
+
+              return variables.completed &&
+                ['background', 'both'].includes(style)
                   ? '[[completed_color]]'
                   : '[[color]]';
-              ]]]
-          - color: |
-              [[[
-                const isCompleted = states['[[completion_entity]]']?.state === 'on';
-                const style = '[[completion_style]]';
-                // Only swap when the background changes, otherwise text would match the background.
-                return isCompleted && ['background', 'both'].includes(style)
-                  ? '[[color]]'
+            ]]]
+        - color: "[[text_color]]"
+
+      grid:
+        - grid-template-areas: '"i" "n" "l"'
+        - grid-template-rows: 1fr min-content min-content
+        - row-gap: 8px
+
+      icon:
+        - width: 36px
+        - color: |
+            [[[
+              const style = '[[completion_style]]';
+
+              return variables.completed &&
+                ['icon', 'both'].includes(style)
+                  ? '[[completed_icon_color]]'
                   : '[[text_color]]';
-              ]]]
+            ]]]
 
-        grid:
-          - grid-template-areas: '"i" "n" "l"'
-          - grid-template-rows: 1fr min-content min-content
-          - row-gap: 8px
+      name:
+        - display: |
+            [[[
+              return String('[[show_title]]') === 'true'
+                ? 'block'
+                : 'none';
+            ]]]
+        - font-size: 14px
 
-        icon:
-          - width: 36px
-          - color: |
-              [[[
-                const isCompleted = states['[[completion_entity]]']?.state === 'on';
-                // Completed icon uses completed_icon_color, falling back to the card's `color`.
-                return isCompleted
-                  ? ('[[completed_icon_color]]' || '[[color]]')
-                  : '[[text_color]]';
-              ]]]
-
-        name:
-          - display: |
-              [[[
-                return String('[[show_title]]') === 'true'
-                  ? 'block'
-                  : 'none';
-              ]]]
-          - font-size: 14px
-
-        label:
-          - font-size: 16px
-          - font-weight: 600
+      label:
+        - font-size: 16px
+        - font-weight: 600
