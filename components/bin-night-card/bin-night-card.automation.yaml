@@ -1,36 +1,26 @@
 alias: Bin night - reset completed bins after collection
 description: >-
-  Turns off a bin's "taken out" helper when its Waste Collection Schedule
-  sensor moves past today's collection (default day_switch_time is 10:00).
+  Turns off a bin's "taken out" helper when its calendar collection event ends,
+  ready for the next collection.
+# Queue simultaneous collections so every bin's helper is reset.
 mode: queued
 triggers:
-  - trigger: state
-    entity_id:
-      - sensor.waste_collection_schedule_red_bin
-      - sensor.waste_collection_schedule_recycling
-      - sensor.waste_collection_schedule_green_bin
+  - trigger: calendar
+    entity_id: calendar.bin_night
+    event: end
 variables:
+  # Keys must match calendar event titles and card titles exactly.
   helpers:
-    sensor.waste_collection_schedule_red_bin: input_boolean.red_bin_out
-    sensor.waste_collection_schedule_recycling: input_boolean.recycling_bin_out
-    sensor.waste_collection_schedule_green_bin: input_boolean.green_bin_out
-  # State looks like "on Tue, 13.10.2026"; empty when unknown/unavailable.
-  old_date: >-
-    {% set m = (trigger.from_state.state if trigger.from_state else '')
-       | regex_findall('([0-9]{2}[.][0-9]{2}[.][0-9]{4})') %}
-    {{ strptime(m[0], '%d.%m.%Y').date().isoformat() if m else '' }}
-  new_date: >-
-    {% set m = (trigger.to_state.state if trigger.to_state else '')
-       | regex_findall('([0-9]{2}[.][0-9]{2}[.][0-9]{4})') %}
-    {{ strptime(m[0], '%d.%m.%Y').date().isoformat() if m else '' }}
+    General Waste: input_boolean.red_bin_out
+    Recycling: input_boolean.recycling_bin_out
+    Green Waste: input_boolean.green_bin_out
 conditions:
-  # Only reset when today's collection has just rolled off the sensor.
+  # Ignore unrelated calendar events (and runs without a calendar trigger).
   - condition: template
     value_template: >-
-      {{ old_date != '' and new_date != ''
-         and old_date == now().date().isoformat()
-         and new_date > old_date }}
+      {{ trigger is defined and trigger.calendar_event is defined
+         and trigger.calendar_event.summary in helpers }}
 actions:
   - action: input_boolean.turn_off
     target:
-      entity_id: "{{ helpers[trigger.entity_id] }}"
+      entity_id: "{{ helpers[trigger.calendar_event.summary] }}"

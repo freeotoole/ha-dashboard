@@ -1,0 +1,43 @@
+# Merge this template entry into Home Assistant's configuration.yaml.
+# If a template list already exists, append this entry to it.
+# Replace calendar.bin_night below if your calendar has a different entity ID.
+
+template:
+  - triggers:
+      - trigger: homeassistant
+        event: start
+      - trigger: time_pattern
+        minutes: "/15"
+
+    actions:
+      - action: calendar.get_events
+        target:
+          entity_id: calendar.bin_night
+        data:
+          start_date_time: "{{ today_at() }}"
+          duration:
+            days: 60
+        response_variable: agenda
+
+    sensor:
+      - name: Bin Night Schedule
+        unique_id: bin_night_schedule
+        state: >
+          {{ agenda['calendar.bin_night']['events'] | count }}
+        attributes:
+          next_by_type: >
+            {% set events = agenda['calendar.bin_night']['events']
+               | sort(attribute='start') %}
+            {% set ns = namespace(result={}) %}
+            {% for event in events %}
+              {% if event.summary not in ns.result
+                    and as_timestamp(event.end, 0) > as_timestamp(now()) %}
+                {% set ns.result = dict(ns.result, **{
+                  event.summary: {
+                    'start': event.start,
+                    'end': event.end
+                  }
+                }) %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.result }}
