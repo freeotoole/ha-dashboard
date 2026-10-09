@@ -1,0 +1,51 @@
+type: custom:bubble-card
+card_type: button
+button_type: switch
+entity: switch.coffee_machine
+name: Lelit
+icon: mdi:coffee-maker
+force_icon: true
+state_content: "{{ states('sensor.coffee_machine_status') | title }}"
+scrolling_effect: false
+tap_action:
+  action: toggle
+hold_action:
+  action: more-info
+grid_options:
+  rows: 1
+  columns: 8
+styles: |
+  ${(() => {
+    const on = hass.states['switch.coffee_machine']?.state === 'on';
+    const status = hass.states['sensor.coffee_machine_status']?.state;
+
+    const fill = on
+      ? (status === 'ready' ? 100 : 50)
+      : 0;
+
+    const bg = on || ['hot', 'warm'].includes(status)
+      ? '#906747'
+      : 'rgba(125,125,125,0.12)';
+
+    return `
+
+      .bubble-button-background {
+        background: ${bg} !important;
+      }
+
+      .bubble-icon-container {
+        background: linear-gradient(
+          to top,
+          #513726 0%,
+          #513726 ${fill}%,
+          #68b4c5 ${fill}%,
+          #68b4c5 100%
+        ) !important;
+      }
+
+      .bubble-icon {
+        color: #f5eee6 !important;
+      }
+
+    `;
+  })()}

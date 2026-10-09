@@ -1,0 +1,46 @@
+# Add to automations
+
+alias: Coffee Machine Warm-up
+description: >-
+  Estimate when the coffee machine is ready from how long it was off. Off >2h =
+  cold (40 min), 1-2h = cool (25 min), 30-60 min = warm (15 min), <30 min = hot
+  (ready immediately).
+triggers:
+  - trigger: state
+    entity_id: switch.coffee_machine
+    to: "off"
+    id: "off"
+  - trigger: state
+    entity_id: switch.coffee_machine
+    to: "on"
+    id: "on"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "off"
+        sequence:
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.coffee_machine_last_off
+            data:
+              timestamp: "{{ now().timestamp() }}"
+      - conditions:
+          - condition: trigger
+            id: "on"
+        sequence:
+          - variables:
+              mins_off: >-
+                {{ (now().timestamp() -
+                state_attr('input_datetime.coffee_machine_last_off',
+                'timestamp') | float(0)) / 60 }}
+              warmup_mins: >-
+                {{ 0 if mins_off < 30 else 15 if mins_off < 60 else 25 if
+                mins_off < 120 else 40 }}
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.coffee_machine_ready_at
+            data:
+              timestamp: "{{ now().timestamp() + warmup_mins | float * 60 }}"
+mode: restart
