@@ -30,8 +30,8 @@ styles: |
       ? '#906747'
       : 'var(--card-background-color)';
 
-    const fillColor = on ? '#68b4c5' : '#513726';
-    const baseColor =  on ? '#513726' : '#110C07';
+    const fillColor = on ? '#513726' : '#513726';
+    const baseColor =  on ? '#68b4c5' : '#110C07';
 
     return `
 
