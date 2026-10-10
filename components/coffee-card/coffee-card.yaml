@@ -18,14 +18,20 @@ styles: |
   ${(() => {
     const on = hass.states['switch.coffee_machine']?.state === 'on';
     const status = hass.states['sensor.coffee_machine_status']?.state;
-
-    const fill = on
-      ? (status === 'ready' ? 100 : 50)
+    const progress = Number(hass.states['sensor.coffee_machine_progress']?.state ?? 0);
+    const boundedProgress = Number.isFinite(progress)
+      ? Math.min(100, Math.max(0, progress))
       : 0;
+    const fill = on
+      ? boundedProgress
+      : status === 'cooling' ? 100 - boundedProgress : 0;
 
-    const bg = on || ['hot', 'warm'].includes(status)
+    const bg = on 
       ? '#906747'
-      : 'rgba(125,125,125,0.12)';
+      : 'var(--card-background-color)';
+
+    const fillColor = on ? '#68b4c5' : '#513726';
+    const baseColor =  on ? '#513726' : '#110C07';
 
     return `
 
@@ -34,12 +40,12 @@ styles: |
       }
 
       .bubble-icon-container {
+        border-radius: 50% !important;
+        overflow: hidden !important;
         background: linear-gradient(
-          to top,
-          #513726 0%,
-          #513726 ${fill}%,
-          #68b4c5 ${fill}%,
-          #68b4c5 100%
+          to bottom,
+          ${fillColor} ${fill}%,
+          ${baseColor} ${fill}%
         ) !important;
       }
 

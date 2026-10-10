@@ -1,5 +1,5 @@
-# Helpers + template sensor for the coffee machine warm-up estimate.
-# Used by automations/Coffee_Machine_Warmup.yaml and dashboard-yaml/Card_Coffee.yaml.
+# Helpers + template sensors for coffee machine warm-up and cooling.
+# Used by coffee-card.automations.yaml and coffee-card.yaml.
 
 # merge with config nano /mnt/user/appdata/homeassistant/configuration.yaml
 
@@ -23,18 +23,16 @@ template:
       - name: Coffee machine status
         unique_id: coffee_machine_status
         state: >-
-          {% set off_ts = state_attr('input_datetime.coffee_machine_last_off', 'timestamp') | float(0) %}
           {% set ready_ts = state_attr('input_datetime.coffee_machine_ready_at', 'timestamp') | float(0) %}
           {% set now_ts = now().timestamp() %}
           {% if is_state('switch.coffee_machine', 'on') %}
             {{ 'ready' if now_ts >= ready_ts else 'heating' }}
           {% else %}
-            {% set mins = (now_ts - off_ts) / 60 %}
-            {{ 'hot' if mins < 30 else 'warm' if mins < 60 else 'cool' if mins < 120 else 'cold' }}
+            {{ 'cooling' if now_ts < ready_ts else 'cold' }}
           {% endif %}
         icon: >-
-          {{ 'mdi:thermometer-high' if this.state in ['ready', 'hot']
-             else 'mdi:thermometer-low' if this.state in ['cold', 'cool']
+          {{ 'mdi:thermometer-high' if this.state == 'ready'
+             else 'mdi:thermometer-low' if this.state == 'cold'
              else 'mdi:thermometer' }}
 
       - name: Coffee machine progress
@@ -42,22 +40,24 @@ template:
         unit_of_measurement: "%"
         state_class: measurement
         state: >-
-          {% if not is_state('switch.coffee_machine', 'on') %}
-            0
-          {% else %}
+          {% if is_state('switch.coffee_machine', 'on') %}
             {% set start = state_attr(
               'input_datetime.coffee_machine_started_at',
               'timestamp') | float(0) %}
-            {% set ready = state_attr(
-              'input_datetime.coffee_machine_ready_at',
+          {% else %}
+            {% set start = state_attr(
+              'input_datetime.coffee_machine_last_off',
               'timestamp') | float(0) %}
-            {% set duration = ready - start %}
-            {% if start <= 0 or ready <= 0 %}
-              0
-            {% elif duration <= 0 %}
-              100
-            {% else %}
-              {{ ([0, (now().timestamp() - start)
-                / duration * 100, 100] | sort)[1] | round(0) }}
-            {% endif %}
+          {% endif %}
+          {% set ready = state_attr(
+            'input_datetime.coffee_machine_ready_at',
+            'timestamp') | float(0) %}
+          {% set duration = ready - start %}
+          {% if start <= 0 or ready <= 0 %}
+            0
+          {% elif duration <= 0 %}
+            100
+          {% else %}
+            {{ ([0, (now().timestamp() - start)
+              / duration * 100, 100] | sort)[1] | round(0) }}
           {% endif %}
